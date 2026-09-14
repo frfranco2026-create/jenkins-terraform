@@ -1,0 +1,52 @@
+pipeline {
+    agent any
+    parameters {
+        booleanParam(name: 'DESTROY', defaultValue: false, description: 'Check to destroy infrastructure instead of applying')
+    }
+    environment {
+        AWS_ACCESS_KEY_ID     = credentials('aws-access-key-id')
+        AWS_SECRET_ACCESS_KEY = credentials('aws-secret-access-key')
+    }
+    stages {
+        stage('Setup Terraform') {
+            steps {
+                script {
+                    def tfHome = tool name: 'Terraform', type: 'org.jenkinsci.plugins.terraform.TerraformInstallation'
+                    env.PATH = "${tfHome}:${env.PATH}"
+                }
+            }
+        }
+        stage('Init') {
+            steps {
+                sh 'terraform init'
+            }
+        }
+        stage('Validate') {
+            steps {
+                sh 'terraform fmt -check'
+                sh 'terraform validate'
+            }
+        }
+        stage('Plan') {
+            steps {
+                script {
+                    if (params.DESTROY) {
+                        sh 'terraform plan -destroy -out=tfplan'
+                    } else {
+                        sh 'terraform plan -out=tfplan'
+                    }
+                }
+            }
+        }
+        stage('Approval') {
+            steps {
+                input message: "Confirm: ${params.DESTROY ? 'DESTROY' : 'apply'} this plan?", ok: 'Proceed'
+            }
+        }
+        stage('Apply') {
+            steps {
+                sh 'terraform apply -auto-approve tfplan'
+            }
+        }
+    }
+}
