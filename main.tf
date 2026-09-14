@@ -10,7 +10,7 @@ terraform {
 }
 
 provider "aws" {
-  region = "us-west-2"  # change to your preferred region
+  region = "us-west-2" # change to your preferred region
 }
 
 # Grab the latest Amazon Linux 2023 AMI so you don't have to hardcode an ID
@@ -26,7 +26,7 @@ data "aws_ami" "amazon_linux" {
 
 resource "aws_instance" "example" {
   ami           = data.aws_ami.amazon_linux.id
-  instance_type = "t2.micro"   # free-tier eligible
+  instance_type = "t2.micro" # free-tier eligible
 
   tags = {
     Name = "terraform-example-instance"
