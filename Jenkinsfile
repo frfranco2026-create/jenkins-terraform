@@ -15,11 +15,6 @@ pipeline {
                 }
             }
         }
-        stage('Checkout') {
-            steps {
-                git branch: 'main', url: 'https://github.com/frfranco2026-create/jenkins-terraform.git'
-            }
-        }
         stage('Init') {
             steps {
                 sh 'terraform init'
