@@ -21,23 +21,23 @@ provider "aws" {
   region = "us-west-2" # change to your preferred region
 }
 
-# Grab the latest Amazon Linux 2023 AMI so you don't have to hardcode an ID
-data "aws_ami" "amazon_linux" {
-  most_recent = true
-  owners      = ["amazon"]
-
-  filter {
-    name   = "name"
-    values = ["al2023-ami-*-x86_64"]
-  }
+# Latest standard Amazon Linux 2023 AMI, published by AWS as a public SSM parameter
+data "aws_ssm_parameter" "al2023" {
+  name = "/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64"
 }
 
 resource "aws_instance" "example" {
-  ami           = data.aws_ami.amazon_linux.id
+  ami           = data.aws_ssm_parameter.al2023.value
   instance_type = "t2.micro" # free-tier eligible
 
   tags = {
     Name = "terraform-example-instance"
+  }
+
+  # New AMI releases would otherwise force a replacement on every run.
+  # To pick up a newer AMI on purpose: terraform apply -replace=aws_instance.example
+  lifecycle {
+    ignore_changes = [ami]
   }
 }
 
