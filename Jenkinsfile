@@ -1,7 +1,12 @@
 pipeline {
     agent any
 
+    parameters {
+        string(name: 'SSH_ALLOWED_CIDR', defaultValue: '187.13.182.162/32', description: 'CIDR allowed to SSH into the EC2 instance')
+    }
+
     environment {
+        TF_VAR_ssh_allowed_cidr = "${params.SSH_ALLOWED_CIDR}"
         AWS_ACCESS_KEY_ID     = credentials('aws-access-key-id')
         AWS_SECRET_ACCESS_KEY = credentials('aws-secret-access-key')
     }
