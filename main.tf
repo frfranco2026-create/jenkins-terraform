@@ -22,7 +22,7 @@ provider "aws" {
 }
 
 variable "ssh_allowed_cidr" {
-  description = "CIDR allowed to SSH into the instance (e.g. 1.2.3.4/32)"
+  description = "CIDR allowed to reach the instance on SSH (22) and the web app (8081), e.g. 1.2.3.4/32"
   type        = string
 
   validation {
@@ -50,6 +50,14 @@ resource "aws_security_group" "ssh" {
     description = "SSH from trusted IP"
     from_port   = 22
     to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = [var.ssh_allowed_cidr]
+  }
+
+  ingress {
+    description = "Web app from trusted IP"
+    from_port   = 8081
+    to_port     = 8081
     protocol    = "tcp"
     cidr_blocks = [var.ssh_allowed_cidr]
   }
